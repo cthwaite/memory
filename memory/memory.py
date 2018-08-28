@@ -357,7 +357,7 @@ def main():
     agt.memory.create_memory(3, 'fish dinner london'.split(), description='eating a fish dinner in london')
 
     for trigger in ('vacation', 'fish', 'london'):
-        score, mem = a.memory.match(trigger)
+        score, mem = agt.memory.match(trigger)
         print(f'trigger [{trigger.upper()}] {score:.2f} - {mem}')
     print()
     agt.memory.pretty_print()
