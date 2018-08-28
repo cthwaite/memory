@@ -1,4 +1,6 @@
 # coding: utf-8
+'''
+'''
 
 import itertools
 import json
@@ -15,6 +17,8 @@ class MemoryTimestamp:
         self.last_accessed = time
 
     def as_dict(self):
+        '''Get the MemoryTimestamp as a dict.
+        '''
         return {
             'created': self.created,
             'last_updated': self.last_updated,
@@ -23,11 +27,14 @@ class MemoryTimestamp:
 
 
 class MemoryPattern:
-    '''[A] memory pattern is represented as a collection of interconnected nodes;
+    '''A memory pattern is represented as a collection of interconnected nodes;
     each node represents a key feature of the memory and has a unique level of
     activation.
     '''
     def __init__(self, m_id, keywords, description=None, content=None, valence=None, weight=1.0, at=None):
+        '''Create a new memory; at minimum, a memory must consist of an ID
+        unique to a given agent, and a list of keywords relating to the memory.
+        '''
         self.m_id = m_id
         self.keywords = set(keywords)
         self.description = description
@@ -38,12 +45,12 @@ class MemoryPattern:
 
     def __repr__(self):
         return f'<MemoryPattern {self.m_id} - {self.description}>'
-    
+
     def __hash__(self):
         '''A MemoryPattern is hashed on its id.
         '''
         return hash(self.m_id)
-    
+
     def __eq__(self, other):
         '''A MemoryPattern is equal to another MemoryPattern if they share the
         same id.
@@ -64,6 +71,8 @@ class MemoryPattern:
         return sum(node.activation for node in nodes if node.keyword in self.keywords)
 
     def as_dict(self):
+        '''Get the MemoryPattern as a dict.
+        '''
         return {
             'id': self.m_id,
             'keywords': list(self.keywords),
@@ -74,6 +83,7 @@ class MemoryPattern:
             'timestamp': self.timestamp.as_dict(),
         }
 
+
 class MemoryNode:
     '''Key term within a MemoryPattern.
     '''
@@ -81,7 +91,7 @@ class MemoryNode:
         self.keyword = keyword
         self.links = links or {}
         self.activation = 0.0
-    
+
     def __repr__(self):
         return f"<MemoryNode '{self.keyword}' ({self.activation:.2f})>"
 
@@ -89,7 +99,7 @@ class MemoryNode:
         '''The has of a MemoryNode is the has of its keyword.
         '''
         return hash(self.keyword)
-    
+
     def __eq__(self, other):
         '''A MemoryNode is equal to another MemoryNode if they share the same
         keyword.
@@ -102,6 +112,8 @@ class MemoryNode:
         raise NotImplementedError
 
     def as_dict(self):
+        '''Get the MemoryNode as a dict.
+        '''
         return {
             'keyword': self.keyword,
             'links': self.links,
@@ -109,7 +121,12 @@ class MemoryNode:
         }
 
     def activate(self, factor, strength=1.0):
-        '''
+        '''Activate this node.
+
+        When a given node is activated by either the memory manager or
+        another node, if the incoming activation is greater than the node's
+        current activation the node’s activation increases as a weighted average
+        of the incoming activation and its current activation value.
         '''
         if factor > self.activation:
             self.activation += ((factor * strength) + self.activation) / 2
@@ -125,6 +142,9 @@ class MemoryNode:
 
 
 class MemoryPool:
+    '''Collection of MemoryPatterns and associated MemoryNodes, representing
+    an agent's memories and their features at one level of memory hierarchy.
+    '''
     def __init__(self, name):
         self.name = name
         self._nodes = dict()
@@ -132,33 +152,45 @@ class MemoryPool:
 
     def __len__(self):
         '''Get the number of nodes in the pool.
+
+        Returns:
+            int
         '''
         return len(self._nodes)
 
     def __contains__(self, keyword):
+        '''Check if the MemoryPool contains a node by keyword.
+
+        Returns:
+            bool
+        '''
         return keyword in self._nodes
 
     def _add_node(self, keyword):
-        '''
+        '''Add a node to the internal node store.
+
+        If the passed `keyword` does not exist within the pool, this creates a
+        new MemoryNode and adds it to the `_nodes` dict.
+
+        Args:
+            keyword (str)
         '''
         if keyword not in self._nodes:
             self._nodes[keyword] = MemoryNode(keyword)
 
     def activate(self, keyword, factor=1.0):
-        '''When a given node is activated by either the memory manager or
-        another node, if the incoming activation is greater than the node's
-        current activation the node’s activation increases as a weighted average
-        of the incoming activation and its current activation value.
-        Following this increase in activation, the node then passes an outgoing
-        activation to all of the nodes it is connected to; this outgoing
-        activation is a fraction of its own new activation value.
-        Importantly, nodes do not 'backtalk' and spread activation back to the
+        '''Activate a MemoryNode by keyword.
+
+        Following activation, a node passes an outgoing signal to all linked
+        nodes; this outgoing activation is a fraction of its own new activation
+        value.
+        Nodes do not 'backtalk' and spread activation back to the
         nodes that activated them, nor can a node's activation value be
-        decreased by an incoming activation. 
+        decreased by an incoming activation.
 
         Args:
-            keyword (str)
-            factor (float)
+            keyword (str): Keyword for node to activate.
+            factor (float, optional)
 
         Returns:
             set: Set of nodes to compare.
@@ -175,7 +207,7 @@ class MemoryPool:
 
     def add(self, memory):
         '''Add a memory to the pool.
-        
+
         When the control system receives a new memory pattern the keywords
         from the pattern are first parsed into the immediate memory pool.
         If one of the pattern’s keywords is not already represented as a node
@@ -194,6 +226,8 @@ class MemoryPool:
         self._memories[memory.m_id] = memory
 
     def as_dict(self):
+        '''Get the MemoryPool as a dict.
+        '''
         return {
             'name': self.name,
             'nodes': [node.as_dict() for node in self._nodes.values()],
@@ -237,6 +271,9 @@ class MemoryPool:
 
         Nodes within each pool are persistent, and remain even after the memory
         that was used to form them has been moved to another pool.
+
+        Args:
+            memory (MemoryPattern)
         '''
         del self._memories[memory.m_id]
         for node in memory.keywords:
@@ -262,6 +299,12 @@ class Memory:
 
     def match(self, keyword):
         '''Find a memory matching the given keyword.
+
+        Args:
+            keyword (str)
+
+        Returns:
+            (float, MemoryPattern)
         '''
         candidates = None
         for pool in (self.immediate, self.shortterm, self.longterm):
@@ -279,10 +322,14 @@ class Memory:
         return self._memories.get(memory_id)
 
     def pretty_print(self):
+        '''Pretty-print the contents of each pool.
+        '''
         for pool in (self.immediate, self.shortterm, self.longterm):
             pool.pretty_print()
-        
+
     def as_dict(self):
+        '''Get the Memory as a dict.
+        '''
         return {
             'memories': [mem.as_dict() for mem in self._memories.values()],
             'immediate': self.immediate.as_dict(),
@@ -292,6 +339,9 @@ class Memory:
 
 
 class Agent:
+    '''Agent model, comprising memory, personality traits, mood, and social
+    ties.
+    '''
     def __init__(self):
         self.memory = Memory()
         self.personality = None
