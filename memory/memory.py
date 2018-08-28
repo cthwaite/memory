@@ -182,7 +182,7 @@ class MemoryPool:
         in the immediate memory pool network, a node for that keyword is
         created (duplicates are not allowed). Each node is connected
         unidirectionally to every other node in its memory pattern, so any
-        two connected nodes are connected bidirectionally. 
+        two connected nodes are connected bidirectionally.
         '''
         if memory.m_id in self._memories:
             raise ValueError('Memory %r already exists in pool %s' % memory, self.name)
