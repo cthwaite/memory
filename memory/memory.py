@@ -3,8 +3,6 @@
 import itertools
 import json
 
-from collections import namedtuple
-
 
 class MemoryTimestamp:
     '''Identifies when a memory pattern was first created, last accessed, and
