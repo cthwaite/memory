@@ -10,7 +10,7 @@ class MemoryTimestamp:
     '''Identifies when a memory pattern was first created, last accessed, and
     last updated.
     '''
-    __slots__ = ('created', 'last_updated', 'last_accessed') 
+    __slots__ = ('created', 'last_updated', 'last_accessed')
     def __init__(self, time):
         self.created = time
         self.last_updated = time
@@ -315,7 +315,7 @@ class Memory:
             return
         results = [(memory.score(candidates), memory) for memory in self._memories.values()]
         return max(results, key=lambda x: x[0])
-    
+
     def get(self, memory_id):
         '''Get a memory by id.
         '''
@@ -350,17 +350,17 @@ class Agent:
 
 
 def main():
-    a = Agent()
-    a.memory.create_memory(0, 'fish lake cottage vacation'.split(), description='fishing at the lake by the cottage on vacation')
-    a.memory.create_memory(1, 'vacation dad scotland'.split(), description='going on vacation with Dad to Scotland')
-    a.memory.create_memory(2, 'vacation dad ireland'.split(), description='going on vacation with Dad to Ireland')
-    a.memory.create_memory(3, 'fish dinner london'.split(), description='eating a fish dinner in london')
+    agt = Agent()
+    agt.memory.create_memory(0, 'fish lake cottage vacation'.split(), description='fishing at the lake by the cottage on vacation')
+    agt.memory.create_memory(1, 'vacation dad scotland'.split(), description='going on vacation with Dad to Scotland')
+    agt.memory.create_memory(2, 'vacation dad ireland'.split(), description='going on vacation with Dad to Ireland')
+    agt.memory.create_memory(3, 'fish dinner london'.split(), description='eating a fish dinner in london')
 
     for trigger in ('vacation', 'fish', 'london'):
         score, mem = a.memory.match(trigger)
         print(f'trigger [{trigger.upper()}] {score:.2f} - {mem}')
     print()
-    a.memory.pretty_print()
+    agt.memory.pretty_print()
     # print(json.dumps(a.memory.as_dict(), indent=2))
 
 
