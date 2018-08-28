@@ -189,10 +189,12 @@ class MemoryPool:
     def pretty_print(self):
         '''Pretty-print the contents of the pool.
         '''
-        if self.is_empty():
-            return
         print(f'{self.name: ^15}')
         print('-' * 15)
+
+        if self.is_empty():
+            print('( empty )', end='\n\n')
+            return
         for node in self._nodes.values():
             print(f'{node.keyword} [{node.activation:.2f}]')
             for link, strength in node.links.items():
@@ -246,7 +248,8 @@ class Memory:
         return self._memories.get(memory_id)
 
     def pretty_print(self):
-        self.immediate.pretty_print()
+        for pool in (self.immediate, self.shortterm, self.longterm):
+            pool.pretty_print()
 
 
 class Agent:
