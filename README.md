@@ -1,0 +1,1 @@
+- Kope, Andrew, Caroline Rose, and Michael Katchabaw. "Modeling Autobiographical Memory for Believable Agents." AIIDE. 2013.
