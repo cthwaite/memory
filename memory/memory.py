@@ -14,6 +14,13 @@ class MemoryTimestamp:
         self.last_updated = time
         self.last_accessed = time
 
+    def as_dict(self):
+        return {
+            'created': self.created,
+            'last_updated': self.last_updated,
+            'last_accessed': self.last_accessed,
+        }
+
 
 class MemoryPattern:
     '''[A] memory pattern is represented as a collection of interconnected nodes;
@@ -56,6 +63,16 @@ class MemoryPattern:
         '''
         return sum(node.activation for node in nodes if node.keyword in self.keywords)
 
+    def as_dict(self):
+        return {
+            'id': self.m_id,
+            'keywords': list(self.keywords),
+            'description': self.description,
+            'content': self.content,
+            'valence': self.valence,
+            'weight': self.weight,
+            'timestamp': self.timestamp.as_dict(),
+        }
 
 class MemoryNode:
     '''Key term within a MemoryPattern.
@@ -83,6 +100,13 @@ class MemoryNode:
         if isinstance(other, MemoryNode):
             return self.keyword == other.keyword
         raise NotImplementedError
+
+    def as_dict(self):
+        return {
+            'keyword': self.keyword,
+            'links': self.links,
+            'activation': self.activation,
+        }
 
     def activate(self, factor, strength=1.0):
         '''
@@ -169,6 +193,13 @@ class MemoryPool:
             self._nodes[sibling].link(node)
         self._memories[memory.m_id] = memory
 
+    def as_dict(self):
+        return {
+            'name': self.name,
+            'nodes': [node.as_dict() for node in self._nodes.values()],
+            'memories': list(self._memories)
+        }
+
     def is_empty(self):
         '''Check if the MemoryPool is empty; an empty pool has no nodes.
 
@@ -250,6 +281,14 @@ class Memory:
     def pretty_print(self):
         for pool in (self.immediate, self.shortterm, self.longterm):
             pool.pretty_print()
+        
+    def as_dict(self):
+        return {
+            'memories': [mem.as_dict() for mem in self._memories.values()],
+            'immediate': self.immediate.as_dict(),
+            'shortterm': self.shortterm.as_dict(),
+            'longterm': self.longterm.as_dict(),
+        }
 
 
 class Agent:
@@ -272,6 +311,7 @@ def main():
         print(f'trigger [{trigger.upper()}] {score:.2f} - {mem}')
     print()
     a.memory.pretty_print()
+    # print(json.dumps(a.memory.as_dict(), indent=2))
 
 
 if __name__ == '__main__':
