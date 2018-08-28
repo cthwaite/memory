@@ -312,7 +312,7 @@ class Memory:
                 candidates = pool.activate(keyword)
                 break
         if not candidates:
-            return
+            return (None, None)
         results = [(memory.score(candidates), memory) for memory in self._memories.values()]
         return max(results, key=lambda x: x[0])
 
