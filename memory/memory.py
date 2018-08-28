@@ -265,16 +265,12 @@ def main():
     a.memory.create_memory(0, 'fish lake cottage vacation'.split(), description='fishing at the lake by the cottage on vacation')
     a.memory.create_memory(1, 'vacation dad scotland'.split(), description='going on vacation with Dad to Scotland')
     a.memory.create_memory(2, 'vacation dad ireland'.split(), description='going on vacation with Dad to Ireland')
-    mem = a.memory.match('vacation')
-    print(mem)
+    a.memory.create_memory(3, 'fish dinner london'.split(), description='eating a fish dinner in london')
 
-    mem = a.memory.match('fish')
-    print(mem)
-
-
-    mem = a.memory.match('dad')
-    print(mem)
-
+    for trigger in ('vacation', 'fish', 'london'):
+        score, mem = a.memory.match(trigger)
+        print(f'trigger [{trigger.upper()}] {score:.2f} - {mem}')
+    print()
     a.memory.pretty_print()
 
 
